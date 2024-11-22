@@ -12,9 +12,9 @@ x = linspace(0, L, n+1);    % x-axis
 
 % Step 1: SFD, BMD Under Train Loading
 x_train = [52, 228, 392, 568, 732, 908]; % train load locations
-P_train = [1 1 1 1 1 1] * (P/6)
+P_train = [1 1 1 1 1 1] * (P/6);
 
-n_train = 1;    % number of train start locations
+n_train = 25;    % number of train start locations
 SFDi = zeros(n_train, n+1);     % 1 SFD for each train start location
 BMDi = zeros(n_train, n+1);     % 1 BMD for each train start location
 
@@ -45,7 +45,7 @@ for i = 1:n_train
     SFDi(i, x_train_adjusted(6):n) = v;
     v = v + R_y;    % final shear force update at the right support
     SFDi(i, n+1) = v;
-    BMDi(i,:) = cumtrapz(SFDi(i, :));   % integrating SFDi
+    BMDi(i,:) = cumtrapz(SFDi(i,:));   % integrating SFDi
 end
 
 SFD = max(abs(SFDi));   % the absolute maximum values of shear force at all locations
@@ -53,30 +53,23 @@ BMD = max(BMDi);        % the maximum value of all bending moments at all locati
 disp(BMDi(n+1))
 
 
-
-
-
-
-
-
-
-
-
+% Plotting the SFD and BMD
 figure(1)
 hold on
-plot(x, SFDi(1,:), "k")
-%plot(x, SFDi, 'k')
-%plot(x, SFD, "r")
+%plot(x, SFDi(1,:), "k")
+plot(x, SFDi, 'k')  % SFD for individual location tests
+plot(x, SFD, "r")   % SFD for maximum shear force
+title("Shear Force Diagrams")
 xlabel('Distance Along Bridge (mm)')
 ylabel('Shear Force (N)')
 hold off
 
 figure(2)
 hold on
-plot(x, BMDi(1,:), "k")
-%plot(x, BMDi, "k")
-%plot(x, BMD, "r")
+%plot(x, BMDi(1,:), "k")
+plot(x, BMDi, "k")  % BMD for individual location tests
+plot(x, BMD, "r")   % BMD for maximum bending moment
+title("Bending Moment Diagrams")
 xlabel('Distance Along Bridge (mm)')
 ylabel('Bending Moment (N m)')
 hold off
-
