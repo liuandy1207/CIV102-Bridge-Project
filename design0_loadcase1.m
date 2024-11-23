@@ -12,14 +12,14 @@ x = linspace(0, L, n+1);    % x-axis
 load_locations = [0 176 340 516 680 856];    % train load locations
 point_loads = [1 1 1 1 1 1] * (P/6);
 
-num_locations = L - load_locations(6) + load_locations(1);    % number of train start locations
+num_locations = L - load_locations(6) + 1;    % number of train start locations
 SFDi = zeros(num_locations, n+1);     % 1 SFD for each train start location
 BMDi = zeros(num_locations, n+1);     % 1 BMD for each train start location
 
 for i = 1:num_locations
     adjusted_load_locations = load_locations + i;  % adjusted train load locations
     % sum of moments at A equation, rearranged for R_y (right support force)
-    R_y = (sum(point_loads .* adjusted_load_locations)) / L;
+    R_y = (sum(point_loads .* (adjusted_load_locations - 1))) / L;
 
     % sum of F_y equation, rearranged for L_y (left support force)
     L_y = sum(point_loads) - R_y;
@@ -27,7 +27,7 @@ for i = 1:num_locations
     V = L_y; % initial shear force at left support
     SFDi(i, 1:adjusted_load_locations(1)) = V; % filling in a shear force value for a given range of x-values
     V = V - point_loads(1); % updating the shear force
-    SFDi(i, adjusted_load_locations(1):adjusted_load_locations(2)) = V; % filling in the updated value for a given range of x-values
+    SFDi(i, (adjusted_load_locations(1)):adjusted_load_locations(2)) = V; % filling in the updated value for a given range of x-values
     V = V - point_loads(2);
     SFDi(i, adjusted_load_locations(2):adjusted_load_locations(3)) = V;
     V = V - point_loads(3);
@@ -38,7 +38,7 @@ for i = 1:num_locations
     SFDi(i, adjusted_load_locations(5):adjusted_load_locations(6)) = V;
     V = V - point_loads(6);
     SFDi(i, adjusted_load_locations(6):n) = V;
-    V = V + R_y;    % final shear force update at the right support
+    V = V + R_y;    % final shear force update
     SFDi(i, n+1) = V;
     SFDi = round(SFDi, 4);
     BMDi(i,:) = cumsum(SFDi(i,:));   % integrating SFDi
@@ -47,8 +47,6 @@ end
 
 SFE = max(abs(SFDi));   % the absolute maximum values of shear force at all locations
 BME = max(BMDi);        % the maximum value of all bending moments at all locations
-
-
 
 %% 2. Define Bridge Parameters
 
