@@ -48,7 +48,78 @@ end
 SFE = max(abs(SFDi));   % the absolute maximum values of shear force at all locations
 BME = max(BMDi);        % the maximum value of all bending moments at all locations
 
+V_max = max(SFE);
+M_max = max(BME);
+
 %% 2. Define Bridge Parameters
+% Design Parameters
+b_top_flange = 100;
+t_top_flange = 1.27;
+
+b_bot_flange = 80;
+t_bot_flange = 1.27;
+
+t_glue_tab = 1.27;  % strange order because it has to be defined for later
+
+t_web = 1.27;
+h_web = 75 - t_bot_flange - t_glue_tab;
+
+b_glue_tab = t_web + 5;
+
+% Design Areas
+top_flange_area = b_top_flange * t_top_flange;
+top_flange_centroid = t_top_flange / 2;
+
+bot_flange_area = b_bot_flange * t_top_flange;
+bot_flange_centroid = t_top_flange / 2;
+
+web_area = t_web * h_web;
+web_centroid = h_web / 2;
+
+glue_tab_area = t_glue_tab * b_glue_tab;
+glue_tab_centroid = t_glue_tab / 2;
+
+total_height = t_top_flange + t_glue_tab + h_web + t_bot_flange;
+
+% Fill up a cross-section arrays
+y_bar = zeros(n);   % global centroid from the bottom
+Q = zeros(n);       % first moment of area
+I = zeros(n);       % second moment of area
+bending_stress_top = zeros(n);
+bending_stress_bot = zeros(n);
+for i = 1:n
+    y_bar(i) = ((top_flange_area * (top_flange_centroid + t_glue_tab + h_web + t_bot_flange))...
+            + (2 * glue_tab_area * (glue_tab_centroid + h_web + t_bot_flange))...
+            + (2 * web_area * (web_centroid + t_bot_flange))...
+            + (bot_flange_area * bot_flange_centroid))...
+            / (top_flange_area + bot_flange_area + 2 * web_area + 2 * glue_tab_area);
+    Q(i) = (top_flange_area * (top_flange_centroid - y_bar(i)))...
+        + 2 * (glue_tab_area * (glue_tab_centroid - y_bar(i)))...
+        + 2 * (web_area * (web_centroid - y_bar(i)))...
+        + (bot_flange_area * (bot_flange_centroid - y_bar(i)));
+    I(i) = (top_flange_area * (top_flange_centroid - y_bar(i)^2))...
+        + 2 * (glue_tab_area * (glue_tab_centroid - y_bar(i))^2)...
+        + 2 * (web_area * (web_centroid - y_bar(i))^2)...
+        + (bot_flange_area * (bot_flange_centroid - y_bar(i))^2)...
+        + ((b_top_flange * (t_top_flange^3))/12)...
+        + (2 * (b_glue_tab * (t_glue_tab^3))/12)...
+        + (2 * (t_web * (h_web^3))/12)...
+        + (b_bot_flange * (t_bot_flange^3))/12;
+    bending_stress_top(i) = (M_max * (total_height - y_bar))/I(i);
+    bending_stress_bot(i) = (M_max * y_bar)/I(i);
+end
+
+shear_stress_web = zeros(n);
+Q_web = zeros(n);
+for i = 1:n
+
+
+end
+
+
+
+
+
 
 
 
